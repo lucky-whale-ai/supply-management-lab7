@@ -1,0 +1,37 @@
+{
+  "name": "progress-supplies",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Учёт заказов и отгрузок завода «Прогресс»",
+  "scripts": {
+    "start": "node server/index.js",
+    "build": "webpack --mode production",
+    "dev:client": "webpack serve --mode development",
+    "db:seed": "node server/seed.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "2.14.0",
+    "axios": "1.21.0",
+    "dotenv": "18.0.9",
+    "express": "5.3.0",
+    "pg": "8.23.1",
+    "pg-hstore": "2.3.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-redux": "9.3.1",
+    "react-router-dom": "6.30.6",
+    "sequelize": "6.37.8"
+  },
+  "devDependencies": {
+    "@babel/core": "8.1.0",
+    "@babel/preset-react": "8.0.1",
+    "babel-loader": "10.1.1",
+    "webpack": "5.112.2",
+    "webpack-cli": "7.3.1",
+    "webpack-dev-server": "6.1.0"
+  }
+}
