@@ -1,0 +1,1773 @@
+{
+  "info": {
+    "name": "Прогресс — поставка товаров",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "CRUD, связи, поиск, фильтры и ошибки. Созданные проверочные записи удаляются в конце успешного запуска."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3007"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get(\"runTag\")) pm.collectionVariables.set(\"runTag\", \"test-\" + Date.now());"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Товары: список и пагинация",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products?page=1&pageSize=3"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "const result = pm.response.json();",
+              "pm.test(\"Список и пагинация\", () => { pm.expect(result.items).to.be.an(\"array\"); pm.expect(result.items.length).to.be.at.most(3); pm.expect(result.total).to.be.at.least(result.items.length); pm.expect(result.page).to.eql(1); pm.expect(result.pageSize).to.eql(3); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товары: отсутствующая запись",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/2147483647"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товары: проверка отсутствия",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/2147483647/exists"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Записи нет\", () => pm.expect(pm.response.json().exists).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товары: неверный ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/abc"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказы: список и пагинация",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders?page=1&pageSize=3"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "const result = pm.response.json();",
+              "pm.test(\"Список и пагинация\", () => { pm.expect(result.items).to.be.an(\"array\"); pm.expect(result.items.length).to.be.at.most(3); pm.expect(result.total).to.be.at.least(result.items.length); pm.expect(result.page).to.eql(1); pm.expect(result.pageSize).to.eql(3); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказы: отсутствующая запись",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders/2147483647"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказы: проверка отсутствия",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders/2147483647/exists"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Записи нет\", () => pm.expect(pm.response.json().exists).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказы: неверный ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders/abc"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузки: список и пагинация",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments?page=1&pageSize=3"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "const result = pm.response.json();",
+              "pm.test(\"Список и пагинация\", () => { pm.expect(result.items).to.be.an(\"array\"); pm.expect(result.items.length).to.be.at.most(3); pm.expect(result.total).to.be.at.least(result.items.length); pm.expect(result.page).to.eql(1); pm.expect(result.pageSize).to.eql(3); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузки: отсутствующая запись",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments/2147483647"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузки: проверка отсутствия",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments/2147483647/exists"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Записи нет\", () => pm.expect(pm.response.json().exists).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузки: неверный ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments/abc"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиции: список и пагинация",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items?page=1&pageSize=3"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "const result = pm.response.json();",
+              "pm.test(\"Список и пагинация\", () => { pm.expect(result.items).to.be.an(\"array\"); pm.expect(result.items.length).to.be.at.most(3); pm.expect(result.total).to.be.at.least(result.items.length); pm.expect(result.page).to.eql(1); pm.expect(result.pageSize).to.eql(3); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиции: отсутствующая запись",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items/2147483647"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиции: проверка отсутствия",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items/2147483647/exists"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Записи нет\", () => pm.expect(pm.response.json().exists).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиции: неверный ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items/abc"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товар: создание",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Проверка {{runTag}}\", \"price\": \"12.50\", \"photo\": \"/images/fasteners.jpg\", \"description\": \"Контроль API\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set(\"productId\", pm.response.json().id);",
+              "pm.test(\"Получен ID\", () => pm.expect(pm.response.json().id).to.be.a(\"number\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товар: подробный просмотр",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/{{productId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Есть фотография\", () => pm.expect(pm.response.json().photo).to.eql(\"/images/fasteners.jpg\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товар: проверка существования",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/{{productId}}/exists"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Запись есть\", () => pm.expect(pm.response.json().exists).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товар: изменение",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/{{productId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Проверка {{runTag}}\", \"price\": \"15.75\", \"photo\": \"/images/fasteners.jpg\", \"description\": \"Контроль API\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Цена сохранена\", () => pm.expect(Number(pm.response.json().price)).to.eql(15.75));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товары: поиск по описанию",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products?q=Контроль%20API"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Найден добавленный товар\", () => pm.expect(pm.response.json().items.some(item => item.id === Number(pm.collectionVariables.get(\"productId\")))).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товары: фильтрация по названию и цене",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products?name={{runTag}}&minPrice=15&maxPrice=16&sort=price&order=desc"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Два условия применены\", () => { const items=pm.response.json().items; pm.expect(items.length).to.eql(1); pm.expect(items[0].id).to.eql(Number(pm.collectionVariables.get(\"productId\"))); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товар: пустое название",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \" \", \"price\": \"12.50\", \"photo\": \"/images/fasteners.jpg\", \"description\": \"Контроль API\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товар: отрицательная цена",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Проверка {{runTag}}\", \"price\": \"-1\", \"photo\": \"/images/fasteners.jpg\", \"description\": \"Контроль API\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Товар: запрещённый адрес изображения",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Проверка {{runTag}}\", \"price\": \"12.50\", \"photo\": \"javascript:alert(1)\", \"description\": \"Контроль API\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказ: создание",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"customerName\": \"Проверочный заказчик {{runTag}}\", \"customerAddress\": \"г. Минск, ул. Заводская, 1\", \"customerPhone\": \"+375 29 123-45-67\", \"contractNumber\": \"API-{{runTag}}\", \"contractDate\": \"2026-11-01\", \"productId\": \"{{productId}}\", \"plannedQuantity\": 100}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set(\"orderId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказ: подробный просмотр с товаром",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders/{{orderId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Связь с товаром\", () => pm.expect(pm.response.json().product.id).to.eql(Number(pm.collectionVariables.get(\"productId\"))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказ: изменение",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders/{{orderId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"customerName\": \"Проверочный заказчик {{runTag}}\", \"customerAddress\": \"г. Минск, ул. Заводская, 1\", \"customerPhone\": \"+375 29 123-45-67\", \"contractNumber\": \"API-{{runTag}}\", \"contractDate\": \"2026-11-01\", \"productId\": \"{{productId}}\", \"plannedQuantity\": 120}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"План изменён\", () => pm.expect(pm.response.json().plannedQuantity).to.eql(120));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказы: поиск по номеру договора",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders?q=API-{{runTag}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Найден заказ\", () => pm.expect(pm.response.json().items[0].id).to.eql(Number(pm.collectionVariables.get(\"orderId\"))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказы: несколько фильтров",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders?productId={{productId}}&customerName={{runTag}}&dateFrom=2026-11-01&dateTo=2026-11-30&sort=contractDate&order=desc"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Нужный заказ\", () => pm.expect(pm.response.json().total).to.eql(1));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказ: несуществующая дата",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"customerName\": \"Проверочный заказчик {{runTag}}\", \"customerAddress\": \"г. Минск, ул. Заводская, 1\", \"customerPhone\": \"+375 29 123-45-67\", \"contractNumber\": \"API-{{runTag}}\", \"contractDate\": \"2026-02-30\", \"productId\": \"{{productId}}\", \"plannedQuantity\": 100}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказ: неверный телефон",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"customerName\": \"Проверочный заказчик {{runTag}}\", \"customerAddress\": \"г. Минск, ул. Заводская, 1\", \"customerPhone\": \"abcdefg\", \"contractNumber\": \"API-{{runTag}}\", \"contractDate\": \"2026-11-01\", \"productId\": \"{{productId}}\", \"plannedQuantity\": 100}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Заказ: несуществующий товар",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"customerName\": \"Проверочный заказчик {{runTag}}\", \"customerAddress\": \"г. Минск, ул. Заводская, 1\", \"customerPhone\": \"+375 29 123-45-67\", \"contractNumber\": \"API-{{runTag}}\", \"contractDate\": \"2026-11-01\", \"productId\": 2147483647, \"plannedQuantity\": 100}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузка: создание",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"number\": \"API-{{runTag}}\", \"shippedAt\": \"2026-11-05\", \"notes\": \"Проверка нескольких товаров\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set(\"shipmentId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузка: подробный просмотр",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments/{{shipmentId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузка: изменение",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments/{{shipmentId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"number\": \"API-{{runTag}}\", \"shippedAt\": \"2026-11-06\", \"notes\": \"Проверка нескольких товаров\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Дата изменена\", () => pm.expect(pm.response.json().shippedAt).to.eql(\"2026-11-06\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузки: поиск по примечанию",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments?q=нескольких%20товаров"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Отгрузка найдена\", () => pm.expect(pm.response.json().items.some(item => item.id === Number(pm.collectionVariables.get(\"shipmentId\")))).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузки: несколько фильтров",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments?number={{runTag}}&dateFrom=2026-11-01&dateTo=2026-11-30&sort=shippedAt&order=asc"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Отгрузка по номеру и дате\", () => pm.expect(pm.response.json().total).to.eql(1));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузка: повтор номера",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"number\": \"API-{{runTag}}\", \"shippedAt\": \"2026-11-05\", \"notes\": \"Проверка нескольких товаров\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Отгрузка: неверная дата",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"number\": \"API-{{runTag}}\", \"shippedAt\": \"2026-13-10\", \"notes\": \"Проверка нескольких товаров\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиция: создание",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"shipmentId\": \"{{shipmentId}}\", \"orderId\": \"{{orderId}}\", \"quantity\": 25}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set(\"itemId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиция: подробный просмотр",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items/{{itemId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Данные связанных сущностей\", () => { const item=pm.response.json(); pm.expect(item.shipment.id).to.eql(Number(pm.collectionVariables.get(\"shipmentId\"))); pm.expect(item.order.product.id).to.eql(Number(pm.collectionVariables.get(\"productId\"))); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиция: изменение",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items/{{itemId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"shipmentId\": \"{{shipmentId}}\", \"orderId\": \"{{orderId}}\", \"quantity\": 30}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Количество изменено\", () => pm.expect(pm.response.json().quantity).to.eql(30));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиции: поиск по данным заказчика",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items?q=Проверочный%20заказчик"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Поиск в связанных таблицах\", () => pm.expect(pm.response.json().items.some(item => item.id === Number(pm.collectionVariables.get(\"itemId\")))).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиции: несколько фильтров",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items?shipmentId={{shipmentId}}&orderId={{orderId}}&minQuantity=25&maxQuantity=35&sort=quantity&order=desc"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Позиция по двум связям и количеству\", () => pm.expect(pm.response.json().total).to.eql(1));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиция: повтор заказа в отгрузке",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"shipmentId\": \"{{shipmentId}}\", \"orderId\": \"{{orderId}}\", \"quantity\": 25}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиция: нулевое количество",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"shipmentId\": \"{{shipmentId}}\", \"orderId\": \"{{orderId}}\", \"quantity\": 0}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Позиция: несуществующий заказ",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"shipmentId\": \"{{shipmentId}}\", \"orderId\": 2147483647, \"quantity\": 25}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Нельзя удалить товар с заказом",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/{{productId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Нельзя удалить заказ с отгрузкой",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders/{{orderId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Нельзя удалить отгрузку с позицией",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments/{{shipmentId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Недопустимая сортировка",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products?sort=unknown"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Недопустимая пагинация",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders?page=0"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Перепутанные границы фильтра",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products?minPrice=100&maxPrice=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Неизвестный сервис",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/unknown"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));",
+              "pm.test(\"Сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.be.a(\"string\").and.not.empty);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Очистка: удалить позицию",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipment-items/{{itemId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Очистка: удалить отгрузку",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/shipments/{{shipmentId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Очистка: удалить заказ",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/orders/{{orderId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Очистка: удалить товар",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/{{productId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Удалённого товара больше нет",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/products/{{productId}}/exists"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Удаление подтверждено\", () => pm.expect(pm.response.json().exists).to.eql(false));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
